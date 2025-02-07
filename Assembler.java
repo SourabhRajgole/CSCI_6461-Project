@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 public class Assembler{
 
-    // HashMap that stores details about each operation
+    // HashMap that stores details about each operation like argument and argument type
     private static final Map<String, OperationMetadata> operationmap = new HashMap<>();
 
     enum ArgumentType {
@@ -19,7 +19,7 @@ public class Assembler{
         UNUSED      
     }
     
-    // Initialize a HashMap to store operation metadata
+    // Initialize  HashMap to store operation metadata
     static {
 
         // Miscellaneous Operations
