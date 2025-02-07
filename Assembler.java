@@ -19,7 +19,7 @@ public class Assembler{
         UNUSED      
     }
     
-    // Initialize a HashMap to store operation metadata
+    // Initialize  HashMap to store operation metadata
     static {
 
         // Miscellaneous Operations
