@@ -81,7 +81,7 @@ public class Assembler{
         operationmap.put("STFR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
     }
 
-    // HashMap to store the OpCode-to-Octal 
+    // HashMap to store the OpCode-To-Octal
     private static final Map<String, String> opcodeToOctalMap = new HashMap<>();
     static {
 
@@ -154,11 +154,11 @@ public class Assembler{
         int decimal = Integer.parseInt(dec); 
         return Integer.toOctalString(decimal); 
     }
-    
+
     private static String processInstruction(String opcode, String[] args, OperationMetadata metadata) {
         int instruction = 0;
         
-        // Get opcode and shift to the most significant 6 bits
+        // Get opcode and shift to most significant 6 bits
         instruction = Integer.parseInt(opcodeToOctalMap.get(opcode), 8) << 10;
         // System.out.println(instruction + " ----");
         // for(String s : args){
