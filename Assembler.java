@@ -1,346 +1,195 @@
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
-public class Assembler{
+public class Assembler {
 
-    // HashMap that stores details about each operation like argument and argument type
-    private static final Map<String, OperationMetadata> operationmap = new HashMap<>();
+    private final Map<String, String> opcodeMap;
+    private final ArrayList<String[]> instructionList;
+    private final ArrayList<String> listingFile;
+    private final ArrayList<String> loaderFile;
 
-    enum ArgumentType {
-        MANDATORY,    
-        OPTIONAL,    
-        UNUSED      
-    }
-    
-    // Initialize  HashMap to store operation metadata
-    static {
-
-        // Miscellaneous Operations
-        operationmap.put("HLT", new OperationMetadata(Arrays.asList(new ArgumentDefinition(10, ArgumentType.UNUSED))));
-        operationmap.put("TRAP", new OperationMetadata(Arrays.asList(new ArgumentDefinition(5, ArgumentType.UNUSED),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-
-        // Load/Store Operations
-        operationmap.put("LDR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("STR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("LDA", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("LDX", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.UNUSED),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.UNUSED),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("STX", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.UNUSED),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.UNUSED),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-
-        // Jump Operations
-        operationmap.put("SETCCE", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(8, ArgumentType.UNUSED))));
-        operationmap.put("JZ", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.UNUSED),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.UNUSED),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("JNE", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.OPTIONAL),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("JCC", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("JMA", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.UNUSED),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("JSR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.UNUSED),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("RFS", new OperationMetadata(Arrays.asList(new ArgumentDefinition(5, ArgumentType.UNUSED),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("SOB", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("JGE", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-
-        // Arithmetic/Logical Operations
-        operationmap.put("AMR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("SMR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("AIR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(3, ArgumentType.UNUSED),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("SIR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(3, ArgumentType.UNUSED),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-
-        // Arithmetic/Logical Operations
-        operationmap.put("MLT", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(6, ArgumentType.UNUSED))));
-        operationmap.put("DVD", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(6, ArgumentType.UNUSED))));
-        operationmap.put("TRR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(6, ArgumentType.UNUSED))));
-        operationmap.put("AND", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(6, ArgumentType.UNUSED))));
-        operationmap.put("ORR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(6, ArgumentType.UNUSED))));
-        operationmap.put("NOT", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(8, ArgumentType.UNUSED))));
-
-        // Shift/Rotate Operations
-        operationmap.put("SRC", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.UNUSED),new ArgumentDefinition(4, ArgumentType.MANDATORY))));
-        operationmap.put("RRC", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.UNUSED),new ArgumentDefinition(4, ArgumentType.MANDATORY))));
-
-        // I/O Operations
-        operationmap.put("IN", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(3, ArgumentType.UNUSED),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("OUT", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(3, ArgumentType.UNUSED),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("CHK", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(3, ArgumentType.UNUSED),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-
-        // Floating Point/Vector Operations
-        operationmap.put("FADD", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("FSUB", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-
-        // Floating Point/Vector Operations
-        operationmap.put("VADD", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("VSUB", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-
-        // Floating Point/Vector Operations
-        operationmap.put("CNVRT", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("LDFR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
-        operationmap.put("STFR", new OperationMetadata(Arrays.asList(new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(2, ArgumentType.MANDATORY),new ArgumentDefinition(1, ArgumentType.OPTIONAL),new ArgumentDefinition(5, ArgumentType.MANDATORY))));
+    // Constructor initializes opcode map and reads input file
+    public Assembler(String sourceFile) {
+        this.opcodeMap = OpCode.getOpCodes();
+        this.instructionList = FileHandling.readInput(sourceFile);
+        this.listingFile = new ArrayList<>();
+        this.loaderFile = new ArrayList<>();
     }
 
-    // HashMap to store the OpCode-To-Octal
-    private static final Map<String, String> opcodeToOctalMap = new HashMap<>();
-    static {
-
-        // Placeholder Operations
-        opcodeToOctalMap.put("LOC", "77");
-        opcodeToOctalMap.put("DATA", "77");
-
-        // Miscellaneous Operations
-        opcodeToOctalMap.put("HLT", "00");
-        opcodeToOctalMap.put("TRAP", "30");
-
-        // Load/Store Operations
-        opcodeToOctalMap.put("LDR", "01");
-        opcodeToOctalMap.put("STR", "02");
-        opcodeToOctalMap.put("LDA", "03");
-        opcodeToOctalMap.put("LDX", "41");
-        opcodeToOctalMap.put("STX", "42");
-
-        // Transfer Operations
-        opcodeToOctalMap.put("SETCCE", "44");
-        opcodeToOctalMap.put("JZ", "10");
-        opcodeToOctalMap.put("JNE", "11");
-        opcodeToOctalMap.put("JCC", "12");
-        opcodeToOctalMap.put("JMA", "13");
-        opcodeToOctalMap.put("JSR", "14");
-        opcodeToOctalMap.put("RFS", "15");
-        opcodeToOctalMap.put("SOB", "16");
-        opcodeToOctalMap.put("JGE", "17");
-
-        // Arithmetic/Logical Operations
-        opcodeToOctalMap.put("AMR", "04");
-        opcodeToOctalMap.put("SMR", "05");
-        opcodeToOctalMap.put("AIR", "06");
-        opcodeToOctalMap.put("SIR", "07");
-
-        // Arithmetic/Logical Operations
-        opcodeToOctalMap.put("MLT", "70");
-        opcodeToOctalMap.put("DVD", "71");
-        opcodeToOctalMap.put("TRR", "72");
-        opcodeToOctalMap.put("AND", "73");
-        opcodeToOctalMap.put("ORR", "74");
-        opcodeToOctalMap.put("NOT", "75");
-
-        // Shift/Rotate Operations
-        opcodeToOctalMap.put("SRC", "30");
-        opcodeToOctalMap.put("RRC", "31");
-
-        // I/O Operations
-        opcodeToOctalMap.put("IN", "61");
-        opcodeToOctalMap.put("OUT", "62");
-        opcodeToOctalMap.put("CHK", "63");
-
-        // Floating Point/Vector Operations
-        opcodeToOctalMap.put("FADD", "33");
-        opcodeToOctalMap.put("FSUB", "34");
-
-        // Floating Point/Vector Operations
-        opcodeToOctalMap.put("VADD", "35");
-        opcodeToOctalMap.put("VSUB", "36");
-
-        // Floating Point/Vector Operations
-        opcodeToOctalMap.put("CNVRT", "37");
-        opcodeToOctalMap.put("LDFR", "50");
-        opcodeToOctalMap.put("STFR", "51");
-    }
-
-
-    // Function that converts octal numbers to binary
-    private static String decimalToOctal(String dec) {
-        int decimal = Integer.parseInt(dec); 
-        return Integer.toOctalString(decimal); 
-    }
-
-    private static String processInstruction(String opcode, String[] args, OperationMetadata metadata) {
-        int instruction = 0;
-        
-        // Get opcode and shift to most significant 6 bits
-        instruction = Integer.parseInt(opcodeToOctalMap.get(opcode), 8) << 10;
-        // System.out.println(instruction + " ----");
-        // for(String s : args){
-        //    System.out.println(s);
-        // }
-        
-        if (opcode.equals("SRC") || opcode.equals("RRC")) {
-            // Special handling for SRC/RRC instructions
-            instruction |= (Integer.parseInt(args[1]) & 0x3) << 8;  // R
-            instruction |= (Integer.parseInt(args[2]) & 0x1) << 7;  // L/R
-            instruction |= (Integer.parseInt(args[3]) & 0x1) << 6;  // A/L
-            instruction |= Integer.parseInt(args[4]) & 0xF;         // Count
-        } else if (opcode.equals("LDX") || opcode.equals("STX")) {
-            // Handle index register operations
-            // System.out.println("lax");
-            
-                instruction |= ((Integer.parseInt(args[1]) & 0x3) << 6);  // IXR
-                instruction |= Integer.parseInt(args[2]) & 0x1F;   // Address
-            
-            if (args.length > 3) {
-                instruction |= (Integer.parseInt(args[3]) & 0x1) << 5;      //Imm  
-            }
-        } else if (opcode.equals("LDR") || opcode.equals("STR") || opcode.equals("LDA")) {
-            // Handle memory reference instructions
-            if (args.length > 1) {
-                instruction |= (Integer.parseInt(args[1]) & 0x3) << 8;  // R
-            }
-            if (args.length > 2) {
-                instruction |= (Integer.parseInt(args[2]) & 0x3) << 6;  // IX
-            }
-            if (args.length > 4) {
-                // For format: LDR R,IX,Address,I
-                instruction |= (Integer.parseInt(args[3]) & 0x1F);        // Address
-                instruction |= (Integer.parseInt(args[4]) & 0x1) << 5;    // I
-            } else if (args.length > 3) {
-                // For format: LDR R,IX,Address
-                instruction |= Integer.parseInt(args[3]) & 0x1F;          // Address
-            }
-        } else if (opcode.equals("JZ") || opcode.equals("JNE") || opcode.equals("JCC") || 
-                  opcode.equals("JMA") || opcode.equals("JSR")) {
-            // Handle jump instructions
-            if (args.length > 1) {
-                instruction |= (Integer.parseInt(args[1]) & 0x3) << 8;  // R
-            }
-            if (args.length > 2) {
-                instruction |= (Integer.parseInt(args[2]) & 0x3) << 6;  // IX
-            }
-            if (args.length > 3) {
-                instruction |= Integer.parseInt(args[3]) & 0x1F;        // Address
-            }
-        } else {
-            // Handle other instructions
-            int argIndex = 1;
-            for (ArgumentDefinition argDef : metadata.getArgumentDefinitions()) {
-                if (argDef.type != ArgumentType.UNUSED && argIndex < args.length) {
-                    String arg = args[argIndex++].replace(",", "");
-                    int value = Integer.parseInt(arg);
-                    int mask = (1 << argDef.bits) - 1;
-                    instruction |= (value & mask) << (10 - argIndex * 2);
-                }
-            }
-        }
-        
-        return String.format("%06o", instruction);
-    }   
-    static class OperationMetadata {
-        private final List<ArgumentDefinition> argumentDefinitions;
-
-        public OperationMetadata(List<ArgumentDefinition> argumentDefinitions) {
-            this.argumentDefinitions = argumentDefinitions;
-        }
-
-        public List<ArgumentDefinition> getArgumentDefinitions() {
-            return argumentDefinitions;
-        }
-    }
-
-    static class ArgumentDefinition {
-        int bits;
-        ArgumentType type;
-
-        public ArgumentDefinition(int bits, ArgumentType type) {
-            this.bits = bits;
-            this.type = type;
-        }
-    }
-
-    // Function allows us to increment the current location of memory
-    private static void incrementCurrentLocation() {
-        int decimalLocation = Integer.parseInt(currentLocation, 8); 
-        // Convert octal to decimal
-        decimalLocation++; // Increment the location
-        currentLocation = Integer.toOctalString(decimalLocation); 
-        // Convert back to octal
-        currentLocation = String.format("%6s", currentLocation).replace(' ', '0'); 
-        // Pad with zeros if necessary
-    }
-
-    public static String currentLocation = ""; 
-    
+    // Main entry point
     public static void main(String[] args) {
-        // Variables that hold our input and output file locations
-        String inputFilename = "input.txt";
-        String outputFilename = "load_output.txt";
-        String listingFilename = "listing_output.txt"; // Added listing file
-        List<String> outputLines = new ArrayList<>();  
-        List<String> listingLines = new ArrayList<>(); // Added for listing
-    
-        try (Scanner scanner = new Scanner(new File(inputFilename));
-             PrintWriter writer = new PrintWriter(new File(outputFilename));
-             PrintWriter listingWriter = new PrintWriter(new File(listingFilename))) { // Added listing writer
-            
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String originalLine = line; 
-                
-                String noComment = line.split(";")[0].trim();
-                if (noComment.isEmpty()) {
-                    listingLines.add(originalLine);
-                    continue;
-                }
-
-                // Split the line into words and handle commas
-                String[] words = noComment.split("\\s+");
-                
-                
-                // System.out.println(originalLine);
-                List<String> finalWords = new ArrayList<>();
-                for (String word : words) {
-                    if (word.contains(",")) {
-                        finalWords.addAll(Arrays.asList(word.split(",")));
-                    } else {
-                        finalWords.add(word);
-                    }
-                }
-                String[] finalArray = finalWords.toArray(new String[0]);
-                
-                if (finalArray.length > 0) {
-                    String opcode = finalArray[0].toUpperCase();
-                    String outputLine = "";
-                  
-                    if (opcode.equals("LOC")) {
-                        currentLocation = String.format("%6s", decimalToOctal(finalArray[1])).replace(' ', '0');
-                        listingLines.add(String.format("%-6s          %s", "", originalLine));
-                    } else {
-                        if (opcode.equals("DATA")) {
-                            String dataValue = (finalArray[1].toUpperCase().equals("END")) ? "1024" : finalArray[1];
-                            dataValue = String.format("%6s", decimalToOctal(dataValue)).replace(' ', '0');
-                            outputLine = String.format("%s  %s", currentLocation, dataValue);
-                            outputLines.add(outputLine);  // Add to output lines
-                            System.out.println(outputLine);  // Print to terminal
-                            listingLines.add(outputLine + "  " + originalLine);
-                        } else if (opcodeToOctalMap.containsKey(opcode)) {
-                            String instructionOctal = processInstruction(opcode, finalArray, operationmap.get(opcode));
-                            outputLine = String.format("%s  %s", currentLocation, instructionOctal);
-                            outputLines.add(outputLine);  // Add to output lines
-                            System.out.println(outputLine);  // Print to terminal
-                            listingLines.add(outputLine + "  " + originalLine);
-                        } else {
-                            System.err.println("Unknown opcode: " + opcode);
-                            listingLines.add(currentLocation + "  ERROR: Unknown opcode  " + originalLine);
-                        }
-                        incrementCurrentLocation();
-                    }
-                } else {
-                    listingLines.add(originalLine);
-                }
-            }
-            
-            // Write output file
-            for (String line : outputLines) {
-                writer.println(line);
-            }
-            
-            // Write listing file
-            for (int i = 0; i < listingLines.size(); i++) {
-              listingWriter.println(listingLines.get(i));
-            }
-            
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Assembler assembler = new Assembler("input.txt");
+        assembler.processAssembly();
     }
-    
+
+    // Helper method to pad strings with leading zeros
+    private String leftPad(String str, int length, char padChar) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = str.length(); i < length; i++) {
+            sb.append(padChar);
+        }
+        sb.append(str);
+        return sb.toString();
+    }
+
+    // Converts instruction to octal
+    private String convertInstruction(String[] instruction) {
+        String register = "00", index = "00", indirectFlag = "0";
+        String address = "00000";
+        String opcode = opcodeMap.get(instruction[0]);
+
+        if (opcode == null) {
+            System.out.println("Error: Invalid opcode " + instruction[0]);
+            return "Fail";
+        }
+
+        String binaryOpcode = leftPad(Integer.toBinaryString(Integer.parseInt(opcode, 8)), 6, '0');
+
+        try {
+            String[] params = instruction[1].split(",");
+            
+            // Enforce limits on parameter counts and validate first parameter range
+            switch (instruction[0]) {
+                case "LDX":
+                case "STX":
+                    if (params.length > 3) {
+                        System.out.println("Error: " + instruction[0] + " allows at most 3 parameters.");
+                        return "Fail";
+                    }
+                    int firstParamLDX_STX = Integer.parseInt(params[0]);
+                    if (firstParamLDX_STX < 1 || firstParamLDX_STX > 3) {
+                        System.out.println("Error: " + instruction[0] + " first parameter must be between 1-3.");
+                        return "Fail";
+                    }
+                    break;
+                case "LDR":
+                case "LDA":
+                case "STR":
+                    if (params.length > 4) {  // Max 4 parameters allowed
+                        System.out.println("Error: " + instruction[0] + " allows at most 4 parameters.");
+                        return "Fail";
+                    }
+                    int firstParamLDR_LDA_STR = Integer.parseInt(params[0]);
+                    if (firstParamLDR_LDA_STR < 0 || firstParamLDR_LDA_STR > 3) {
+                        System.out.println("Error: " + instruction[0] + " first parameter must be between 0-3.");
+                        return "Fail";
+                    }
+                    break;
+            }
+
+            // Process instructions based on opcode
+            switch (instruction[0]) {
+                case "LDR": case "LDA": case "STR": case "JCC": case "SOB":
+                case "AMR": case "SMR": case "JGE":
+                    register = leftPad(Integer.toBinaryString(Integer.parseInt(params[0])), 2, '0');
+                    index = leftPad(Integer.toBinaryString(Integer.parseInt(params[1])), 2, '0');
+                    if(Integer.parseInt(params[2])>31) {
+                    	System.out.println("address out of bound");
+                    	return "fail";
+                    }
+                    address = leftPad(Integer.toBinaryString(Integer.parseInt(params[2])), 5, '0');
+                    indirectFlag = (params.length == 4 && params[3].equals("1")) ? "1" : "0";
+                    break;
+                case "SIR": case "IN": case "OUT": case "CHK":
+                    register = leftPad(Integer.toBinaryString(Integer.parseInt(params[0])), 2, '0');
+                    address = leftPad(Integer.toBinaryString(Integer.parseInt(params[1])), 5, '0');
+                    break;
+                case "NOT":
+                    register = leftPad(Integer.toBinaryString(Integer.parseInt(params[0])), 2, '0');
+                    break;
+                case "RFS":
+                    address = leftPad(Integer.toBinaryString(Integer.parseInt(params[0])), 5, '0');
+                    break;
+                case "SRC": case "RRC":
+                    register = leftPad(Integer.toBinaryString(Integer.parseInt(params[0])), 2, '0');
+                    index = params[2] + params[3];
+                    address = leftPad(Integer.toBinaryString(Integer.parseInt(params[1])), 5, '0');
+                    break;
+                case "LDX": case "STX": case "DVD": case "MLT": case "JZ":
+                case "JNE": case "ORR": case "JMA": case "AND": case "JSR": case "TRR":
+                    register = "00";
+                    index = leftPad(Integer.toBinaryString(Integer.parseInt(params[0])), 2, '0');
+                    if(Integer.parseInt(params[1])>31) {
+                    	System.out.println("address out of bound");
+                    	return "fail";
+                    }
+                    address = leftPad(Integer.toBinaryString(Integer.parseInt(params[1])), 5, '0');
+                    if(params.length==3 && params[2].equals("1")) {
+                    	indirectFlag ="1";
+                    }
+                    else if(params.length==3 && params[2].equals("0")) {
+                    	indirectFlag = "0";
+                    }
+                    else if(params.length==3){
+                    	System.out.println("Error indirectFlag cannot be more than 1 bit");
+                    	return "Error";
+                    }
+//                    indirectFlag = (params.length == 3 && params[2].equals("1")) ? "1" : "0";
+                    break;
+                default:
+                    return "Fail";
+            }
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+            System.out.println("Error parsing instruction: " + String.join(" ", instruction));
+            return "Fail";
+        }
+
+        //        	System.out.println(indirectFlag);
+        return binaryOpcode + register + index + indirectFlag + address;
+    }
+
+
+    // Adds a line to the loader file
+    private void appendToLoaderFile(String line) {
+        loaderFile.add(line);
+    }
+
+    // Adds a line to the listing file
+    private void appendToListingFile(String columns, String[] input) {
+        String formattedInstruction = String.join(" ", input);
+        listingFile.add(columns + "\t" + formattedInstruction);
+    }
+
+    // Processes and assembles the code
+    public void processAssembly() {
+        int programCounter = 0;
+        for (String[] input : instructionList) {
+            String binaryCode;
+            switch (input[0]) {
+                case "LOC":
+                    programCounter = Integer.parseInt(input[1]);
+                    appendToListingFile("      " + "\t" + "      ", input);
+                    continue;
+                case "Data":
+                    if (input[1].equals("End")) {
+                        binaryCode = "10000000000";
+                    } else {
+                        binaryCode = leftPad(Integer.toBinaryString(Integer.parseInt(input[1])), 16, '0');
+                    }
+                    break;
+                case "End:":
+                    binaryCode = "0";
+                    break;
+                default:
+                    binaryCode = convertInstruction(input);
+                    break;
+            }
+
+            // Convert PC and instruction to octal
+            String pcOctal = leftPad(Integer.toOctalString(programCounter), 6, '0');
+            String instructionOctal = leftPad(Integer.toOctalString(Integer.parseInt(binaryCode, 2)), 6, '0');
+
+            // Write to files
+            appendToLoaderFile(pcOctal + " " + instructionOctal);
+            appendToListingFile(pcOctal + " " + instructionOctal, input);
+
+            // Increment PC
+            programCounter++;
+        }
+
+        // Write final output to files
+        FileHandling.writeToFile("Load.txt", loaderFile);
+        FileHandling.writeToFile("List.txt", listingFile);
+        System.out.println("Listing and Loader Files generated successfully.");
+    }
 }
