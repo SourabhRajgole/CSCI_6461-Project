@@ -154,7 +154,7 @@ public class Assembler{
         int decimal = Integer.parseInt(dec); 
         return Integer.toOctalString(decimal); 
     }
-
+    
     private static String processInstruction(String opcode, String[] args, OperationMetadata metadata) {
         int instruction = 0;
         
