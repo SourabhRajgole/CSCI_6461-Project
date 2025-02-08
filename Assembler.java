@@ -189,13 +189,13 @@ public class Assembler{
             if (args.length > 2) {
                 instruction |= (Integer.parseInt(args[2]) & 0x3) << 6;  // IX
             }
-            if (args.length > 3 && args.length==4) {
-                
-                instruction |= Integer.parseInt(args[args.length-1]) & 0x1F;        // Address
-            }
             if (args.length > 4) {
-                instruction |= (Integer.parseInt(args[args.length-2]) & 0x1) << 5;  // I
-                instruction |= Integer.parseInt(args[args.length-1]) & 0x1F;        // Address
+                // For format: LDR R,IX,Address,I
+                instruction |= (Integer.parseInt(args[3]) & 0x1F);        // Address
+                instruction |= (Integer.parseInt(args[4]) & 0x1) << 5;    // I
+            } else if (args.length > 3) {
+                // For format: LDR R,IX,Address
+                instruction |= Integer.parseInt(args[3]) & 0x1F;          // Address
             }
         } else if (opcode.equals("JZ") || opcode.equals("JNE") || opcode.equals("JCC") || 
                   opcode.equals("JMA") || opcode.equals("JSR")) {
