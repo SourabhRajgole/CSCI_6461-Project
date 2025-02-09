@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class FileHandling {
+public class FileManager {
 
     // Read lines from a file and return them as an ArrayList of strings
     public static ArrayList<String[]> readInput(String filename) {
