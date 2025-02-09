@@ -4,6 +4,7 @@ import java.util.Map;
 
 public class Opcode{
 
+	 // Definition of all opcode constants
     public static final String HLT = "00";
     public static final String LDR = "01";
     public static final String STR = "02";
@@ -42,10 +43,10 @@ public class Opcode{
     public static final String ORR = "074";
     public static final String NOT = "075";
 
-    // Precomputed map of opcodes
+    // Pre-computed map of opcodes
     private static final Map<String, String> opCodes = new HashMap<>();
 
-    // Static block to initialize the opCodes map
+ // Static block to initialize the opCodes map dynamically
     static {
         for (Field field : Opcode.class.getDeclaredFields()) {
             if (field.getType() == String.class &&
@@ -62,6 +63,7 @@ public class Opcode{
         }
     }
 
+ // Returns a copy of the opcode mapping to ensure data integrity 
     public static Map<String, String> getOpCodes() {
         return new HashMap<>(opCodes); // Return a copy to ensure encapsulation
     }

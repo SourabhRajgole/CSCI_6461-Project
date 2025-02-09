@@ -55,7 +55,7 @@ public class Assembler {
                 case "LDX":
                 case "STX":
                     if (params.length > 3) {
-                        System.out.println("Error: " + instruction[0] + " Fot this Opcode only 3 Arguments are Allowed!!");
+                        System.out.println("Error: For Opcode " + instruction[0] + " only 3 Arguments are Allowed!!");
                         return "Fail";
                     }
                     int firstParamLDX_STX = Integer.parseInt(params[0]);
@@ -68,7 +68,7 @@ public class Assembler {
                 case "LDA":
                 case "STR":
                     if (params.length > 4) {  // Max 4 parameters allowed
-                        System.out.println("Error: " + instruction[0] + " Fot this Opcode only 4 Arguments are Allowed!!");
+                        System.out.println("Error: For Opcode " + instruction[0] + " only 4 Arguments are Allowed!!");
                         return "Fail";
                     }
                     int firstParamLDR_LDA_STR = Integer.parseInt(params[0]);
