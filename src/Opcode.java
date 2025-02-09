@@ -2,7 +2,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OpCode{
+public class Opcode{
 
     public static final String HLT = "00";
     public static final String LDR = "01";
@@ -47,7 +47,7 @@ public class OpCode{
 
     // Static block to initialize the opCodes map
     static {
-        for (Field field : OpCode.class.getDeclaredFields()) {
+        for (Field field : Opcode.class.getDeclaredFields()) {
             if (field.getType() == String.class &&
                 java.lang.reflect.Modifier.isStatic(field.getModifiers()) &&
                 java.lang.reflect.Modifier.isPublic(field.getModifiers())) {

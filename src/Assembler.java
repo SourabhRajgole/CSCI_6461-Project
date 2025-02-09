@@ -3,26 +3,26 @@ import java.util.Map;
 
 public class Assembler {
 
-    private final Map<String, String> OpCodeMapping;
-    private final ArrayList<String[]> InstructionSet;
-    private final ArrayList<String> listingFileOutput;
-    private final ArrayList<String> LoadFileOutput;
+    private final Map<String, String> OpCodeMapping;// Mapping of OpCodes to their respective binary representations
+    private final ArrayList<String[]> InstructionSet; // List to store parsed assembly instructions
+    private final ArrayList<String> listingFileOutput;// Output list for the listing file
+    private final ArrayList<String> LoadFileOutput; // Output list for the load file
 
     // Constructor initializes opcode map and reads input file
     public Assembler(String sourceFile) {
-        this.OpCodeMapping = OpCode.getOpCodes();
+        this.OpCodeMapping = Opcode.getOpCodes();
         this.InstructionSet = FileManager.readInput(sourceFile);
         this.listingFileOutput = new ArrayList<>();
         this.LoadFileOutput = new ArrayList<>();
     }
 
-    // Main entry point
+    // Main method: Entry point of the assembler
     public static void main(String[] args) {
         Assembler assembler = new Assembler("input.txt");
         assembler.joiningprocess();
     }
 
-    // Helper method to pad strings with leading zeros
+    // Pads the input string with the given character until it reaches the specified length
     private String leftPad(String String, int length, char PadCharacter) {
         StringBuilder sb = new StringBuilder();
         for (int i = String.length(); i < length; i++) {
@@ -32,23 +32,25 @@ public class Assembler {
         return sb.toString();
     }
 
-    // Converts instruction to octal
+    // Converts assembly instruction into its corresponding binary representation
     private String ProcessInstruction(String[] instruction) {
         String GPR = "00", index = "00", Indirectaddressing = "0";
         String address = "00000";
         String Opcode = OpCodeMapping.get(instruction[0]);
 
+     // Validate opcode
         if (Opcode == null) {
             System.out.println("Error: Provided OpCode is Invalid!! " + instruction[0]);
             return "Fail";
         }
 
+     // Convert opcode to binary
         String binaryOpcode = leftPad(Integer.toBinaryString(Integer.parseInt(Opcode, 8)), 6, '0');
 
         try {
             String[] params = instruction[1].split(",");
             
-            // Enforce limits on parameter counts and validate first parameter range
+         // Validate parameters based on the instruction type
             switch (instruction[0]) {
                 case "LDX":
                 case "STX":
@@ -158,18 +160,18 @@ public class Assembler {
     }
 
 
-    // Adds a line to the loader file
+    // Adds a line to the loader file output
     private void appendToLoadFileOutput(String line) {
         LoadFileOutput.add(line);
     }
 
-    // Adds a line to the listing file
+    // Adds a line to the listing file output
     private void appendTolistingFileOutput(String columns, String[] input) {
         String formattedInstruction = String.join(" ", input);
         listingFileOutput.add(columns + "\t" + formattedInstruction);
     }
 
-    // Processes and assembles the code
+    // Processes and assembles the code into machine-readable format
     public void joiningprocess() {
         int programCounter = 0;
         for (String[] input : InstructionSet) {
@@ -206,7 +208,7 @@ public class Assembler {
             programCounter++;
         }
 
-        // Write final output to files
+       // Save final output to files
         FileManager.writeToFile("Load_Output.txt", LoadFileOutput);
         FileManager.writeToFile("Listing_Output.txt", listingFileOutput);
         System.out.println("Assembely Language Translation Completed Succesfully, See The Output in Listing and Load Files.");
