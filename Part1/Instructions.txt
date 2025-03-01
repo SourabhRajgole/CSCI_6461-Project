@@ -1,0 +1,12 @@
+STEPS TO RUN THE CODE
+
+1) Unzip the folder named Team7Project-1, go to out -> artifacts -> p1New_jar and you can see a jar file, instructions and input file, now run the jar file.
+2) You will see the simulator interface.
+3) Now for running a load file, click on the ipl button it will help you choose a file from your system.
+4) The selected file's instruction have to be in octal (like the output we get from an assembler). These instructions will be displayed in printer output text field.
+5) Based on the memory addresses the PC will be set to the starting address, if not manually type in the number in pc field and can click on step for single step instruction execution or on run for total execution till the halt instruction is encountered.
+6) The instruction details and its execution will be displayed in printer output area and based on the operations the general purpose register and index registers values get updated.
+7) Now when the halt is encountered the execution stops and you can not execute any instructions , you need to manually type in the pc value again if you want to run the simulator or else close the simulator and open it again.
+8) For checking the store button, enter the address in MAR field and the value in MBR field then click on store . You can see the instruction executed in printer output field and the value is stored in the address specified.
+9) For checking the Load button, enter the general purpose register number in octal input field and the memory address from where the value has to be loaded. You can see that the gpr value will be updated based on the value present at that address.
+
