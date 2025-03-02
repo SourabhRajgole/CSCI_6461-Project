@@ -1,6 +1,6 @@
 STEPS TO RUN THE CODE
 
-1) Unzip the folder named Team7Project-1, go to out -> artifacts -> p1New_jar and you can see a jar file, instructions and input file, now run the jar file.
+1) Unzip the folder named Team9Project-1, go to out -> artifacts -> p1New_jar and you can see a jar file, instructions and input file, now run the jar file.
 Launching the Simulator
 Open the simulator to view the user interface.
 
