@@ -1,17 +1,24 @@
-000024 000062
-000025 000031
-000026 002000
-000027 000010
-000030 000020
-000031 000005
-000032 000036
-000033 000050
-000034 102125
-000035 003026
-000036 003526
-000037 002166
-000040 006400
-000041 104227
-000042 005430
-000043 020540
-001000 000000
+# ============================
+#   Instructions Section
+# ============================
+010 10001   # LDR R0, 001   -> Loads memory[1] into R0
+011 20002   # ADD R0, 002   -> Adds memory[2] to R0
+012 10403   # LDR R1, 003   -> Loads memory[3] into R1
+013 22404   # SUB R1, 004   -> Subtracts memory[4] from R1 (if SUB implemented)
+014 24005   # MUL R0, 005   -> Multiplies R0 by memory[5] (if MUL implemented)
+015 26006   # DIV R0, 006   -> Divides R0 by memory[6] (if DIV implemented)
+016 30200   # JMA 020       -> Unconditional jump to instruction at address 020 (if JMA implemented)
+017 32007   # SOB R0, 007   -> Subtract One from R0 and branch if R0 > 0 (if SOB implemented)
+020 34010   # JGE R0, 010   -> Jump if R0 >= 0 to address 010 (if JGE implemented)
+021 06103   # LDA R0, 011   -> Loads the address 11 into R0 (if LDA implemented)
+022 00000   # HLT           -> Halts execution
+
+# ============================
+#   Data Section
+# ============================
+001 00012   # Data: memory[1] = 12 (octal) => 10 decimal
+002 00004   # Data: memory[2] = 4  (octal) => 4 decimal
+003 00020   # Data: memory[3] = 20 (octal) => 16 decimal
+004 00005   # Data: memory[4] = 5  (octal) => 5 decimal
+005 00002   # Data: memory[5] = 2  (octal) => 2 decimal
+006 00002   # Data: memory[6] = 2  (octal) => 2 decimal

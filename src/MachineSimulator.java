@@ -296,46 +296,25 @@ mainPanel.add(buttonPanel, gbc);
         BufferedReader reader = new BufferedReader(new FileReader(romFile));
         String line;
         while ((line = reader.readLine()) != null) {
-            line = line.split("#")[0].trim();  // Remove comments
-            if (line.isEmpty()) continue;  // Skip empty lines
-    
-            String[] parts = line.split("\\s+");  // Split by spaces
-            if (parts.length < 2) {
-                printerArea.append("Malformed line in ROM file: " + line + "\n");
-                continue;
-            }
-    
-            try {
-                int address = Integer.parseInt(parts[0], 8);  // Convert address from octal
-                int instruction = Integer.parseInt(parts[1], 8);  // Convert instruction from octal
-                
-                // Ensure we store instructions as 16-bit values
-                String binaryInstruction = String.format("%16s", Integer.toBinaryString(instruction)).replace(' ', '0');
-                if (address < MEMORY_SIZE) {
-                    memory[address] = Integer.parseInt(binaryInstruction, 2);
-                    printerArea.append("Memory[" + address + "] = " + binaryInstruction + " (Octal: " + parts[1] + ")\n");
-                } else {
-                    printerArea.append("Error: Address " + address + " out of memory bounds.\n");
+            String[] parts = line.trim().split("\\s+");
+            if (parts.length == 2) {
+                try {
+                    int address = Integer.parseInt(parts[0], 8);  // Octal
+                    int instruction = Integer.parseInt(parts[1], 8);  // Octal
+                    String binaryInstruction = Integer.toBinaryString(instruction);
+                    if (address >= 0 && address < MEMORY_SIZE) {
+                        memory[address] = Integer.parseInt(binaryInstruction, 2);
+                    }
+                } catch (NumberFormatException ex) {
+                    printerArea.append("Invalid data in ROM file: " + line + "\n");
                 }
-            } catch (NumberFormatException ex) {
-                printerArea.append("Invalid octal data in ROM file: " + line + "\n");
+            } else {
+                printerArea.append("Malformed line in ROM file: " + line + "\n");
             }
         }
-        // debugMemory(); // Debugging output
         reader.close();
     }
-    
-    
-    private void debugMemory() {
-        printerArea.append("\n====== MEMORY DUMP BEFORE EXECUTION ======\n");
-        for (int i = 0; i < MEMORY_SIZE; i++) {
-            if (memory[i] != 0) {
-                String instructionBinary = String.format("%16s", Integer.toBinaryString(memory[i])).replace(' ', '0');
-                printerArea.append("Memory[" + i + "] = " + instructionBinary + "\n");
-            }
-        }
-    }
-    
+
     private void setPCToFirstInstruction() {
         for (int i = 0; i < MEMORY_SIZE; i++) {
             if (memory[i] != 0) {
@@ -347,17 +326,16 @@ mainPanel.add(buttonPanel, gbc);
     }
 
     private void displayLoadedROMContents() {
-        printerArea.append("Memory Contents after ROM loading (addresses in decimal, instructions in 16-bit binary):\n");
+        printerArea.append("Memory Contents after ROM loading (addresses in decimal, instructions in binary):\n");
         for (int i = 0; i < MEMORY_SIZE; i++) {
             if (memory[i] != 0) {
                 int decimalAddress = i;
-                String instructionInBinary = String.format("%16s", Integer.toBinaryString(memory[i])).replace(' ', '0'); 
+                String instructionInBinary = Integer.toBinaryString(memory[i]);
                 printerArea.append("Address (Decimal): " + decimalAddress +
                                    ", Instruction (Binary): " + instructionInBinary + "\n");
             }
         }
     }
-    
 
     private class IPLActionListener implements ActionListener {
         @Override
@@ -380,23 +358,7 @@ mainPanel.add(buttonPanel, gbc);
             }
         }
     }
-    private void readConsoleInput() {
-        try {
-            int gprIndex = Integer.parseInt(octalInputField.getText()); // Select register
-            if (gprIndex < 0 || gprIndex >= 4) {
-                printerArea.append("Invalid register index. Enter 0-3.\n");
-                return;
-            }
-    
-            int inputValue = Integer.parseInt(consoleInputField.getText());
-            GPR[gprIndex] = inputValue;  // Store in chosen GPR
-            gprFields[gprIndex].setText(String.valueOf(inputValue));
-            printerArea.append("Read input: " + inputValue + " into GPR" + gprIndex + ".\n");
-        } catch (NumberFormatException e) {
-            printerArea.append("Invalid input. Enter a valid number.\n");
-        }
-    }
-    
+
     private class StepActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -420,21 +382,7 @@ mainPanel.add(buttonPanel, gbc);
             }
         }
     }
-    private void storeManualMemory() {
-        try {
-            int address = Integer.parseInt(marField.getText());
-            int value = Integer.parseInt(mbrField.getText());
-            if (address >= 0 && address < MEMORY_SIZE) {
-                memory[address] = value;
-                printerArea.append("Manually stored value " + value + " into memory at " + address + ".\n");
-            } else {
-                printerArea.append("Error: Memory address out of bounds.\n");
-            }
-        } catch (NumberFormatException ex) {
-            printerArea.append("Invalid input for memory store.\n");
-        }
-    }
-    
+
     private class RunActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -450,34 +398,10 @@ mainPanel.add(buttonPanel, gbc);
             }
         }
     }
-    private void memoryAccessCycle(int address, boolean isWrite) {
-        if (address < 0 || address >= MEMORY_SIZE) {
-            printerArea.append("Memory access error: Address out of bounds.\n");
-            return;
-        }
-    
-        MAR = address; // First cycle: Load MAR
-        marField.setText(String.valueOf(MAR));
-    
-        if (isWrite) {
-            memory[MAR] = MBR; // Second cycle: Store value in memory
-            printerArea.append("Stored value " + MBR + " at address " + MAR + ".\n");
-        } else {
-            MBR = memory[MAR]; // Second cycle: Load value into MBR
-            mbrField.setText(String.valueOf(MBR));
-            printerArea.append("Loaded value " + MBR + " from address " + MAR + ".\n");
-        }
-    }
-    private void handleMachineFault(String reason) {
-        printerArea.append("MACHINE FAULT: " + reason + "\n");
-        MFR = 1;  // Set Machine Fault Register
-        mfrField.setText(String.valueOf(MFR));
-        stopProgram(); // Halt execution
-    }
-    
+
     private void executeInstruction(int instruction) {
-        System.err.println("instruction " + instruction);
         String binaryInstruction = String.format("%16s", Integer.toBinaryString(instruction)).replace(' ', '0');
+        System.out.println();
         if (binaryInstruction.equals("0000000000000000")) {
             printerArea.append("HLT: Program halted at PC " + PC + ".\n");
             stopProgram();
@@ -490,132 +414,95 @@ mainPanel.add(buttonPanel, gbc);
         int address = Integer.parseInt(binaryInstruction.substring(11, 16), 2);
 
         int effectiveAddress = calculateEffectiveAddress(ixrIndex, iBit, address);
-        printerArea.append("Stored Value " + instruction + " at Memory[" + PC + "]\n");
-    //     switch (opcode) {
-    //         case "001000":  // JZ
-    //             if (GPR[gprIndex] == 0) {
-    //             PC = effectiveAddress;
-    //             pcField.setText(String.valueOf(PC));
-    //             printerArea.append("JZ: Jumped to " + effectiveAddress + " (GPR " + gprIndex + " == 0).\n");
-    //             } else {
-    //                 PC++;
-    //             }
-    //             break;
 
-    //         case "001001":  // JNE
-    //             if (GPR[gprIndex] != 0) {
-    //                 PC = effectiveAddress;
-    //                 printerArea.append("JNE: Jumped to " + effectiveAddress + " (GPR " + gprIndex + " != 0).\n");
-    //             } else {
-    //                 PC++;
-    //             }
-    //             break;
-    //         case "001010":  // JCC
-    //             if (CC == gprIndex) {
-    //                 PC = effectiveAddress;
-    //                 printerArea.append("JCC: Jumped to " + effectiveAddress + " (CC == " + gprIndex + ").\n");
-    //             } else {
-    //                 PC++;
-    //             }
-    //             break;
-    //         case "001011":  // JMA (Unconditional Jump)
-    //             PC = effectiveAddress;
-    //             pcField.setText(String.valueOf(PC));  // Update UI
-    //             printerArea.append("JMA: Jumped unconditionally to " + effectiveAddress + ".\n");
-    //             break;
-            
-    //         case "001100":  // JSR
-    //             GPR[3] = PC + 1;
-    //             PC = effectiveAddress;
-    //             printerArea.append("JSR: Saved return addr in GPR3, jumped to " + effectiveAddress + ".\n");
-    //             break;
-    //         case "001101":  // RFS
-    //             GPR[0] = address;
-    //             PC = GPR[3];
-    //             printerArea.append("RFS: Returned to GPR3, loaded " + address + " into GPR0.\n");
-    //             break;
-    //         case "001110":  // SOB
-    //             GPR[gprIndex]--;
-    //             if (GPR[gprIndex] > 0) {
-    //                 PC = effectiveAddress;
-    //                 printerArea.append("SOB: Decremented GPR " + gprIndex + ", jumped to " + effectiveAddress + ".\n");
-    //             } else {
-    //                 PC++;
-    //             }
-    //             break;
-    //         case "001111":  // JGE
-    //             if (GPR[gprIndex] >= 0) {
-    //                 PC = effectiveAddress;
-    //                 printerArea.append("JGE: Jumped to " + effectiveAddress + " (GPR " + gprIndex + " >= 0).\n");
-    //             } else {
-    //                 PC++;
-    //             }
-    //             break;
-    //         case "000010":  // STR
-    //             MBR = GPR[gprIndex];
-    //             memoryAccessCycle(effectiveAddress, true);
-    //             printerArea.append("STR: Stored value " + MBR + " from GPR " + gprIndex + " into address " + effectiveAddress + ".\n");
-
-    // // Update cache/memory display (if available)
-    // cacheContent.append("Memory[" + effectiveAddress + "] = " + memory[effectiveAddress] + "\n");
-    // break;
-    //         case "006400":  // LDA R, EA
-    //             GPR[gprIndex] = effectiveAddress;  // Store the address, NOT the value at address
-    //             gprFields[gprIndex].setText(String.valueOf(GPR[gprIndex]));
-    //             printerArea.append("LDA: Loaded address " + effectiveAddress + " into GPR " + gprIndex + ".\n");
-    //             break;
-    //         case "100001":  // LDX
-    //             IXR[ixrIndex - 1] = memory[effectiveAddress];
-    //             ixrFields[ixrIndex - 1].setText(String.valueOf(IXR[ixrIndex - 1]));
-    //             printerArea.append("LDX: Loaded from " + effectiveAddress + " into IXR " + ixrIndex + ".\n");
-    //             break;
-    //         case "100010":  // STX
-    //             memory[effectiveAddress] = IXR[ixrIndex - 1];
-    //             printerArea.append("STX: Stored IXR " + ixrIndex + " into " + effectiveAddress + ".\n");
-    //             break;
-    //         case "000001":  // LDR
-    //             memoryAccessCycle(effectiveAddress, false);  // Load value from memory
-    //             GPR[gprIndex] = MBR;  // Store in register
-    //             gprFields[gprIndex].setText(String.valueOf(GPR[gprIndex])); // Update UI
-    //             printerArea.append("LDR: Loaded value " + MBR + " from " + effectiveAddress + " into GPR " + gprIndex + ".\n");
-    //             break;
-            
-              
-
-    //         case "010000":  // ADD R, EA
-    //             GPR[gprIndex] += memory[effectiveAddress];
-    //             gprFields[gprIndex].setText(String.valueOf(GPR[gprIndex]));
-    //             printerArea.append("ADD: Added value at " + effectiveAddress + " to GPR " + gprIndex + ".\n");
-    //             break;
-            
-    //         case "010001":  // SUB R, EA
-    //             GPR[gprIndex] -= memory[effectiveAddress];
-    //             gprFields[gprIndex].setText(String.valueOf(GPR[gprIndex]));
-    //             printerArea.append("SUB: Subtracted value at " + effectiveAddress + " from GPR " + gprIndex + ".\n");
-    //             break;
-            
-    //         case "010010":  // MUL R, EA
-    //             GPR[gprIndex] *= memory[effectiveAddress];
-    //             gprFields[gprIndex].setText(String.valueOf(GPR[gprIndex]));
-    //             printerArea.append("MUL: Multiplied GPR " + gprIndex + " by value at " + effectiveAddress + ".\n");
-    //             break;
-            
-    //         case "010011":  // DIV R, EA
-    //             if (memory[effectiveAddress] == 0) {
-    //                 handleMachineFault("Division by zero");
-    //             } else {
-    //                 GPR[gprIndex] /= memory[effectiveAddress];
-    //                 gprFields[gprIndex].setText(String.valueOf(GPR[gprIndex]));
-    //                 printerArea.append("DIV: Divided GPR " + gprIndex + " by value at " + effectiveAddress + ".\n");
-    //             }
-    //             break;    
-    //         case "000000":
-    //             printerArea.append("Data added at memory location" + PC + ".\n");
-    //             break;
-    //         default:
-    //             handleMachineFault("Undefined instruction at PC " + PC);
-    //             break;                       
-    //     }
+        switch (opcode) {
+            case "001000":  // JZ
+                if (GPR[gprIndex] == 0) {
+                    PC = effectiveAddress;
+                    printerArea.append("JZ: Jumped to " + effectiveAddress + " (GPR " + gprIndex + " == 0).\n");
+                } else {
+                    PC++;
+                }
+                break;
+            case "001001":  // JNE
+                if (GPR[gprIndex] != 0) {
+                    PC = effectiveAddress;
+                    printerArea.append("JNE: Jumped to " + effectiveAddress + " (GPR " + gprIndex + " != 0).\n");
+                } else {
+                    PC++;
+                }
+                break;
+            case "001010":  // JCC
+                if (CC == gprIndex) {
+                    PC = effectiveAddress;
+                    printerArea.append("JCC: Jumped to " + effectiveAddress + " (CC == " + gprIndex + ").\n");
+                } else {
+                    PC++;
+                }
+                break;
+            case "001011":  // JMA
+                PC = effectiveAddress;
+                printerArea.append("JMA: Jumped unconditionally to " + effectiveAddress + ".\n");
+                break;
+            case "001100":  // JSR
+                GPR[3] = PC + 1;
+                PC = effectiveAddress;
+                printerArea.append("JSR: Saved return addr in GPR3, jumped to " + effectiveAddress + ".\n");
+                break;
+            case "001101":  // RFS
+                GPR[0] = address;
+                PC = GPR[3];
+                printerArea.append("RFS: Returned to GPR3, loaded " + address + " into GPR0.\n");
+                break;
+            case "001110":  // SOB
+                GPR[gprIndex]--;
+                if (GPR[gprIndex] > 0) {
+                    PC = effectiveAddress;
+                    printerArea.append("SOB: Decremented GPR " + gprIndex + ", jumped to " + effectiveAddress + ".\n");
+                } else {
+                    PC++;
+                }
+                break;
+            case "001111":  // JGE
+                if (GPR[gprIndex] >= 0) {
+                    PC = effectiveAddress;
+                    printerArea.append("JGE: Jumped to " + effectiveAddress + " (GPR " + gprIndex + " >= 0).\n");
+                } else {
+                    PC++;
+                }
+                break;
+            case "000001":  // LDR
+                GPR[gprIndex] = memory[effectiveAddress];
+                gprFields[gprIndex].setText(String.valueOf(GPR[gprIndex]));
+                printerArea.append("LDR: Loaded from " + effectiveAddress + " into GPR " + gprIndex + ".\n");
+                break;
+            case "000010":  // STR
+                memory[effectiveAddress] = GPR[gprIndex];
+                printerArea.append("STR: Stored GPR " + gprIndex + " into " + effectiveAddress + ".\n");
+                break;
+            case "000011":  // LDA
+                GPR[gprIndex] = address;
+                gprFields[gprIndex].setText(String.valueOf(GPR[gprIndex]));
+                printerArea.append("LDA: Loaded address " + address + " into GPR " + gprIndex + ".\n");
+                break;
+            case "100001":  // LDX
+                IXR[ixrIndex - 1] = memory[effectiveAddress];
+                ixrFields[ixrIndex - 1].setText(String.valueOf(IXR[ixrIndex - 1]));
+                printerArea.append("LDX: Loaded from " + effectiveAddress + " into IXR " + ixrIndex + ".\n");
+                break;
+            case "100010":  // STX
+                memory[effectiveAddress] = IXR[ixrIndex - 1];
+                printerArea.append("STX: Stored IXR " + ixrIndex + " into " + effectiveAddress + ".\n");
+                break;
+            case "000000":
+                printerArea.append("Stored value at PC " + PC + ".\n");
+                break;
+            default:
+                printerArea.append("Unknown instruction at PC " + PC + ".\n");
+                MFR = 1;  // Set machine fault register
+                mfrField.setText(String.valueOf(MFR));
+                break;
+        }
     }
 
     private void stopProgram() {
