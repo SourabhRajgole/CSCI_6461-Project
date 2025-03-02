@@ -1,33 +1,51 @@
-STEPS TO RUN THE CODE
 
-1) Unzip the folder named Team9Project-1, go to out -> artifacts -> p1New_jar and you can see a jar file, instructions and input file, now run the jar file.
-Launching the Simulator
-Open the simulator to view the user interface.
+The CSCI 6461 Machine Simulator is a graphical tool designed to simulate a basic machine architecture. It allows users to execute programs, manage memory, and interact with registers through an easy-to-use interface.
 
-2)Loading a Program File
+Steps to Run the Simulator
 
-Click on the IPL button to open a file selection window.
-Select the desired program file from your system.
-The file must contain instructions in octal format (such as the output from an assembler).
-The simulator will load these instructions into memory and display them in the Printer Output area.
-The PC (Program Counter) will be set automatically to the first instruction's address. If needed, you can manually enter a new starting address in the PC field.
+1) Extract and Locate the JAR File
+- Unzip the folder named CSCI6461_Group9_Project1.
+- Open instruction file and follow the instructions.
+- Navigate out where you will find the JAR file and input file.
+- Run the JAR file Using "java -jar --enable-preview Part1.jar" command to launch the simulator.
 
-3)Executing Instructions
+2) Loading a Program File
+- Click on the IPL button to open a file selection window.
+- Select the Test1.ROM.txt file as input file.
+- The file must contain instructions in octal format (such as the output from an assembler).
+- The simulator will load these instructions into memory and display them in the Printer Output area.
+- The Program Counter (PC) will be set automatically to the first instruction's address. If needed, you can manually enter a new starting address in the PC field.
 
-Click Step to execute a single instruction at a time.
-Click Run to execute all instructions until a HALT instruction is encountered.
-The Printer Output area will display details of executed instructions.
-The General Purpose Registers (GPRs) and Index Registers (IXRs) will be updated based on executed operations.
+3) Executing Instructions
+- Click Step to execute a single instruction at a time.
+- Click Run to execute all instructions until a HALT instruction is encountered.
+- The Printer Output area will display details of executed instructions.
+- The General Purpose Registers (GPRs) and Index Registers (IXRs) will be updated based on executed operations.
 
-4)Loading Data into Registers
+4) Loading Data into Registers
+- Enter the General Purpose Register (GPR) index (0-3) in the Octal Input field.
+- Enter the memory address from which to load data.
+- Click the Load button.
+- The corresponding GPR will be updated with the value from the specified memory location.
 
-Enter the General Purpose Register (GPR) index (0-3) in the Octal Input field.
-Enter the memory address from which to load data.
-Click the Load button.
-The corresponding GPR will be updated with the value from the specified memory location.
+5) Console Input Handling
+- Enter a value in the Console Input field.
+- Specify the GPR index in the Octal Input field.
+- Press Enter, and the value will be stored in the selected GPR.
 
-5)Console Input Handling
+==============================================================================================================================================================
+Console Layout
+When you open the simulator, you will see various sections:
+- General Purpose Registers (GPR): These include R0, R1, R2, and R3, which store temporary values for processing.
+- Index Registers (IXR): IX1, IX2, and IX3 help in address calculations.
+- Other Registers: The Program Counter (PC) tracks the next instruction, the Memory Address Register (MAR) holds memory locations, the Memory Buffer Register(MBR) stores data being transferred, the Instruction Register (IR) keeps the current instruction, and the Machine Fault Register (MFR detects errors.
+- Binary and Octal Input Fields: These allow users to enter values and view binary representations.
+- Cache Content and Printer: These display memory and output results.
+- Console Input Field: Used for manual user input during program execution.
 
-Enter a value in the Console Input field.
-Specify the GPR index in the Octal Input field.
-Press Enter, and the value will be stored in the selected GPR.
+Stopping the Simulator
+- Click the Halt button to manually stop execution.
+- The simulator also halts automatically if it encounters a HLT instruction.
+
+The output of the program is displayed in the Printer section. The simulator provides a simple way to interact with low-level machine instructions and understand fundamental computer architecture concepts.
+
