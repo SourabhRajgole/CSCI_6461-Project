@@ -33,7 +33,7 @@ Steps to Run the Simulator
 - Specify the GPR index in the Octal Input field.
 - Press Enter, and the value will be stored in the selected GPR.
 
-==============================================================================================================================================================
+******************************************************************************************************************
 Console Layout
 When you open the simulator, you will see various sections:
 - General Purpose Registers (GPR): These include R0, R1, R2, and R3, which store temporary values for processing.
