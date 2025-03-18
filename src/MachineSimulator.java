@@ -24,6 +24,7 @@ public class MachineSimulator {
 	// Points to the next cache line to replace
 	private LinkedHashMap<Integer, Integer> cache = new LinkedHashMap<Integer, Integer>(CACHE_SIZE, 0.75f, true) 
 	{
+		 // Removes the eldest entry when the cache size exceeds CACHE_SIZE
 		protected boolean removeEldestEntry(Map.Entry<Integer, Integer> eldest) {
 			return size() > CACHE_SIZE;  // Keep the cache size limited to CACHE_SIZE
 		}
