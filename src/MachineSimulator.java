@@ -598,13 +598,14 @@ public class MachineSimulator {
 			}
 		}
 	}
-	
+	// Updates the cache display by iterating through the cache entries and appending them to the display area
 	private void updateCacheDisplay() {
 		cacheContent.setText("Cache Contents:\n");
+		// Iterate through each cache entry and display the PC address and instruction
 		for (Map.Entry<Integer, Integer> entry : cache.entrySet()) {
-			int pcAddress = entry.getKey();
-			int instr = entry.getValue();
-			String formattedInstr = String.format("%06o", instr);
+			int pcAddress = entry.getKey();                                    // Program Counter (PC) address
+			int instr = entry.getValue();                                      // Instruction at the PC address
+			String formattedInstr = String.format("%06o", instr);              // Format instruction as 6-digit octal
 			cacheContent.append("PC " + pcAddress + ": " + formattedInstr + "\n");
 		}
 	}
