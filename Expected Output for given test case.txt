@@ -1,0 +1,45 @@
+Printer:
+ROM file loaded into memory successfully.
+PC set to the address of the first instruction.
+Memory Contents after ROM loading (addresses in decimal, instructions in binary):
+Address (Decimal): 6, Instruction (Binary): 1010
+Address (Decimal): 7, Instruction (Binary): 11
+Address (Decimal): 8, Instruction (Binary): 1000010010000111
+Address (Decimal): 9, Instruction (Binary): 10100001010
+Address (Decimal): 10, Instruction (Binary): 1000010001001000
+Address (Decimal): 11, Instruction (Binary): 1001011
+Address (Decimal): 12, Instruction (Binary): 1000000001000000
+Address (Decimal): 13, Instruction (Binary): 1000000000
+Address (Decimal): 14, Instruction (Binary): 1000000001
+Cache miss: Adding new instruction to cache.
+Stored value at PC 6.
+Cache miss: Adding new instruction to cache.
+Stored value at PC 7.
+Cache miss: Adding new instruction to cache.
+LDX: Loaded from 7 into IXR 2.
+Cache miss: Adding new instruction to cache.
+LDR: Loaded from 10 into GPR 1.
+Cache miss: Adding new instruction to cache.
+LDX: Loaded from 8 into IXR 1.
+Cache miss: Adding new instruction to cache.
+Stored value at PC 11.
+Cache miss: Adding new instruction to cache.
+Unknown instruction at PC 12.
+Cache miss: Adding new instruction to cache.
+Stored value at PC 13.
+Cache miss: Adding new instruction to cache.
+Stored value at PC 14.
+HLT: Program halted at PC 15.
+Run stopped: Program halted at PC 15.
+
+Cache Contents:
+Cache Contents:
+PC 6: 000012
+PC 7: 000003
+PC 8: 102207
+PC 9: 002412
+PC 10: 102110
+PC 11: 000113
+PC 12: 100100
+PC 13: 001000
+PC 14: 001001
