@@ -1,6 +1,6 @@
 STEPS TO RUN THE CODE
 
-1) Unzip the folder named Team7ProjectPart-3, go to out -> artifacts -> Team7ProjectPart_3_jar and you can see a jar file, instructions and input file, now run the jar file.
+1) Unzip the folder named CSCI6461_Group9_Project3 and you can see a Part3.jar file, instructions and input file, now run the jar file.
 2) You will see the simulator interface.
 3) Now for running the simulator load the octal input file, click on the ipl button it will help you choose a file from your system.
 4) The file's instruction have been converted to octal by the assembler and I have provided directly the file with contents (like the output we get from an assembler). These instructions will be displayed in printer output text field.
@@ -8,7 +8,7 @@ STEPS TO RUN THE CODE
 6) The instruction details and its execution will be displayed in printer output area and based on the operations the general purpose register and index registers values get updated.
 7) For running the program click on Step button 
 	a) Program 1: it will show an input dialog box for entering the number. Repeat this process for 20 times and simultaneously yo can see the instructions in the printer area and 	what is happening based on the instructions. The 21st number which you enter is the number to be searched and the output will be displayed through a dialog box and even in the 	printer area.
-	b) Program 2: it will show a file chooser to choose the paragraph that has to be loaded into the memory and next asks the user to enter the word to be searched and the output will be 	displayed with a dialog box showing in which line and which position the word is present.
+	b) Program 2: it will show a file chooser to choose the paragraph that has to be loaded into the memory and next asks the user to enter the word to be searched and the output will be displayed with a dialog box showing in which line and which position the word is present.
 8) These instructions are saved in the cache contents area based on FIFO manner. Since majority of the program have same instructions or repeating instructions like we use the instructions for input these are checked and not added into the cache if they are already present.
 9) Now when the halt is encountered the execution stops and you can not execute any instructions , you need to manually type in the pc value again if you want to run the simulator or else close the simulator and open it again.
 
