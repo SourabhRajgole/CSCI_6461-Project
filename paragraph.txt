@@ -1,0 +1,6 @@
+The quick brown fox jumps over the lazy dog.
+This is an example sentence for testing purposes.
+Data science is a field that combines domain expertise, programming skills, and knowledge of mathematics.
+Machine learning is a subset of artificial intelligence.
+A good programmer learns how to think in code.
+The word "data" is a versatile term used across various disciplines.
